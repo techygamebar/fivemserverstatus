@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Send USDT (BEP-20)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <style>
+    body { font-family: sans-serif; text-align: center; margin-top: 80px; }
+    button { padding: 12px 20px; font-size: 18px; background: #26a17b; border: none; border-radius: 8px; color: #fff; cursor: pointer; }
+    #status { margin-top: 25px; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <h2>Send USDT to a Pre-Filled Address</h2>
+
+  <button onclick="sendUSDT()">💸 Send 10 USDT</button>
+  <p id="status"></p>
+
+  <script>
+    const usdtAddress = "0x55d398326f99059fF775485246999027B3197955"; // USDT BEP-20 on BNB Smart Chain
+    const recipient = "0xE0C9DcAe97554A4988F0F5EdB5706Be8C57066C6";   // Your receiving address
+    const amount = "10.0"; // Amount to send in USDT
+
+    const usdtABI = [
+      "function transfer(address to, uint256 amount) public returns (bool)"
+    ];
+
+    async function sendUSDT() {
+      if (typeof window.ethereum === "undefined") {
+        alert("Please open in Trust Wallet or MetaMask.");
+        return;
+      }
+
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      await provider.send("eth_requestAccounts", []);
+      const signer = provider.getSigner();
+
+      const contract = new ethers.Contract(usdtAddress, usdtABI, signer);
+      const decimals = 18; // USDT on BSC uses 18 decimals
+      const amountInWei = ethers.utils.parseUnits(amount, decimals);
+
+      document.getElementById("status").innerText = "⏳ Waiting for approval...";
+
+      try {
+        const tx = await contract.transfer(recipient, amountInWei);
+        await tx.wait();
+        document.getElementById("status").innerText = "✅ 10 USDT sent successfully!";
+      } catch (err) {
+        document.getElementById("status").innerText = `❌ Error: ${err.message}`;
+      }
+    }
+  </script>
+
+</body>
+</html>
